@@ -16,18 +16,29 @@ $(document).ready(function(){
         $(".page_content.active").removeClass("active")
         if($(this).hasClass("repair_mode")){
             $(document).find("#content_home").addClass("active");
+            
         }else{
             $(document).find("#content_homeE").addClass("active");
+            
         }
     });
     
     $(".inge_choice").on('click', function(){
         $(".head_logo").addClass("inge_mode");
         $(".head_logo").removeClass("repair_mode");
+        $(document).find(".exit_bloc").removeClass("hidden");
     });
     $(".repair_choice").on('click', function(){
         $(".head_logo").addClass("repair_mode");
         $(".head_logo").removeClass("inge_mode");
+        $(document).find(".exit_bloc").removeClass("hidden");
+    });
+    $(".exit_bloc").on('click', function(){
+        $(this).addClass("hidden");
+        $(".page_content.active").removeClass("active");
+        setTimeout(function(){
+            $(document).find("#content_role").addClass("active");
+        },100);
     });
     
     

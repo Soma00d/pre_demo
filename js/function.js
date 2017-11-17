@@ -162,7 +162,7 @@ $(document).ready(function(){
     
     //CONNEXION SECTION DIAGNOSTIQUE REPAIR
     $("#send_info_login_diag").on('click', function(){ 
-        alert(addHexVal("00000580", nodeID));
+        //alert(addHexVal("00000580", nodeID));
         userSSO = ($(".login_diag #user_sso_input_diag").val());
         partNumber = ($(".login_diag #part_number_input_diag").val());
         serialNumber = ($(".login_diag #serial_number_input_diag").val()); 
@@ -307,7 +307,7 @@ $(document).ready(function(){
     
     //CONNEXION SECTION FINALTEST REPAIR
     $("#send_info_login_finaltest").on('click', function(){ 
-        alert(addHexVal("00000580", nodeID));
+        //alert(addHexVal("00000580", nodeID));
         userSSO = ($(".login_finaltest #user_sso_input_finaltest").val());
         partNumber = ($(".login_finaltest #part_number_input_finaltest").val());
         serialNumber = ($(".login_finaltest #serial_number_input_finaltest").val()); 
@@ -520,7 +520,7 @@ $(document).ready(function(){
     
     //recupération des infos tsui homepage INGE
     $("#send_info_hp_E").on('click', function(){
-        alert(addHexVal("00000580", nodeID));
+        //alert(addHexVal("00000580", nodeID));
         userSSO = ($("#user_sso_input_E").val());
         familyChoice = ($("#family_choice").html());
         modelChoice = ($("#model_choice").html());        
@@ -573,6 +573,8 @@ $(document).ready(function(){
                             $(this).remove();
                         });
                         $(".joystick_container_new").empty();
+                        $(".calibration_zone_container").empty();
+                        $(".calibration_test_container").empty();
                         for (var iter = 0; iter < len; iter++) {
                             console.log(data[iter].zone);
                             switch(data[iter].zone){                                
@@ -2206,7 +2208,7 @@ $(document).ready(function(){
     }); 
     function startVerifyCalibration(subindexX, subindexY, identifier){
         currentIdentifier = identifier;
-        alert("start with "+currentIdentifier);
+        //alert("start with "+currentIdentifier);
         currentSubindexX = subindexX;
         currentSubindexY = subindexY;
         
@@ -2977,38 +2979,38 @@ $(document).ready(function(){
         
         $(".emergency_stop_bt").on('click', function(){            
             sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300143000000");
-            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F0030014C000000");
-            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300152000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F0030024C000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300352000000");
             $(".emergency_stop_bt").off();
             $(".emergency_stop_bt").html("Send SET Command");            
             
             $(".emergency_stop_bt").on('click', function(){
                 $(".emergency_stop_bt").off();
                 $(".emergency_stop_bt").html("Send CLR Command");
-                sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300153000000");
-                sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300145000000");
-                sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300154000000");                
+                sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300153000000");
+                sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300245000000");
+                sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300354000000");                
                 
                 $(".emergency_stop_bt").on('click', function(){
                     $(".emergency_stop_bt").off();
                     $(".emergency_stop_bt").html("Send DWN Command");
-                    sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300143000000");
-                    sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F0030014C000000");
-                    sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300152000000");
+                    sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300143000000");
+                    sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F0030024C000000");
+                    sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300352000000");
                     
                     
                     $(".emergency_stop_bt").on('click', function(){
                         $(".emergency_stop_bt").off();
                         $(".emergency_stop_bt").html("Send CLR Command");
-                        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300144000000");
-                        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300157000000");
-                        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F0030014E000000");
+                        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300144000000");
+                        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300257000000");
+                        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F0030034E000000");
                         $(".emergency_stop_bt").on('click', function(){
                             $(".emergency_stop_bt").html("Emergency Stop TEST");
                             $(".emergency_stop_bt").off();
-                            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300143000000");
-                            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F0030014C000000");
-                            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300152000000");
+                            sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300143000000");
+                            sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F0030024C000000");
+                            sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300352000000");
                             //clearInterval(intervalSpe);
                             $(".emergency_stop_bt").on('click', function(){
                                 startEmergencyStopProcess();                                
@@ -3020,7 +3022,34 @@ $(document).ready(function(){
         });
     };
     
-    
+    $(".emergency_container .emergency").on('click', function(){
+        if($(this).hasClass('on')){
+            $(this).removeClass('on');
+            clearInterval(intervalSpe);
+            $(this).find("img").attr('src', 'images/switch_off.png');
+        }else{
+            $(this).addClass('on');
+                intervalSpe = setInterval(function(){
+                sendSignal("002400806d68d7551407f09b861e3aad000549a844010000000007180500000000000000");
+            },100);      
+            $(this).find("img").attr('src', 'images/switch_on.png');
+        }
+    });
+    $(".emergency_container .emergency_bt_clr").on('click', function(){
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300143000000");
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F0030024C000000");
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300352000000");
+    });
+    $(".emergency_container .emergency_bt_set").on('click', function(){
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300153000000");
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300245000000");
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300354000000");                
+    });
+    $(".emergency_container .emergency_bt_down").on('click', function(){
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300144000000");
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300257000000");
+        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F0030034E000000");
+    });
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////// ON CLICK FUNCTION ////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3183,7 +3212,7 @@ $(document).ready(function(){
  
    $(".bouton.newjoy").on('click', function(){
        _MODE = "PRETEST";
-       alert("mode pretest");
+       //alert("mode pretest");
    });
    
    $(".tsui_restart_bt").on('click', function(){
