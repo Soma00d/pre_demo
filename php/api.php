@@ -5,7 +5,7 @@
 ///////////////////////////////////////////////////////////////////
 $VALEUR_hote='localhost';
 $VALEUR_port='';
-$VALEUR_nom_bd='testbench';
+$VALEUR_nom_bd='testbench2';
 $VALEUR_user='root';
 $VALEUR_mot_de_passe='';
 
@@ -53,7 +53,7 @@ $getTsuiRepair = function ($part_number, $connexion){
 
 //retourne un dictionnaire complet en fonction d'une family id
 $getDictionariesById = function ($id, $connexion){
-    $resultats=$connexion->query("SELECT * FROM dictionaries WHERE family_id = $id AND type != 'filter1' AND type != 'filter2'");  
+    $resultats=$connexion->query("SELECT * FROM dictionaries WHERE family_id = $id ORDER BY id");  
     $resultats->execute();
     $result = $resultats->fetchAll();
 
@@ -62,7 +62,7 @@ $getDictionariesById = function ($id, $connexion){
 
 //retourne les elements du test final en fonction d'une family id
 $getFinalTest = function ($id, $connexion){
-    $resultats=$connexion->query("SELECT * FROM dictionaries WHERE family_id = $id AND is_final = '1'");  
+    $resultats=$connexion->query("SELECT * FROM dictionaries WHERE family_id = $id AND is_final = '1' ORDER BY RAND()");  
     $resultats->execute();
     $result = $resultats->fetchAll();
     

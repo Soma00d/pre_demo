@@ -72,6 +72,7 @@ $(document).ready(function(){
     var nameFinalContainer = $("#testfinal_container .name_test_container");
     var symbolNameFinal = $("#testfinal_container #symbol_name_t");
     var descriptionFinal = $("#testfinal_container #description_t");
+    var userActionFinal = $("#testfinal_container #useraction_t");
     var imgFinal = $("#testfinal_container .img_t img");
     var imgFinalBloc = $("#testfinal_container .img_t");
     var timerBloc = $("#testfinal_container .timer_bloc");
@@ -82,6 +83,7 @@ $(document).ready(function(){
         
     //Test final fonctionnel
     var finalTestEntries = {};     
+    var finalTestEntriesTest = [];     
     var waitingAction;
     var waitingPressValue;
     var waitingReleaseValue;
@@ -99,6 +101,10 @@ $(document).ready(function(){
     var currDescription;
     var currPhoto_link;
     var currTimer;
+    var currOffSignal;
+    var currOnSignal;
+    var currSignalStart;
+    var currSignalStop;
     
     //Spybox
     var spyBox = $("#dialog-spybox .content_line");
@@ -378,8 +384,9 @@ $(document).ready(function(){
                                         +"</div>");
                                         joystickVerifyContainer.append("<div class='realtime_joysticks_val id"+data[iter].id+"'>"
                                             +"<div class='joystick_val_info'>"
+                                                +"<div class='title_verify'>"+data[iter].description+"</div>"
                                                 +"<button class='verify_calibration id"+data[iter].id+"' data-long='"+data[iter].calib_subindex_x+"' data-lat='"+data[iter].calib_subindex_y+"' data-id='"+data[iter].id+"'>Verify</button> "
-                                                +"<button class='stop_calibration_verif id"+data[iter].id+"' data-id='"+data[iter].id+"'>Stop</button><br><br>"
+                                                +"<button class='stop_calibration_verif id"+data[iter].id+" hidden' data-id='"+data[iter].id+"'>Stop</button><br><br>"
                                                 +"<div class='bloc_left_joy'>"
                                                     +"<span class='text_config'>X : </span><span class='x_value_joy'>0</span><br>"
                                                     +"<span class='text_config'>Min X : </span><span class='minx_value_joy'>0</span><br>"
@@ -498,7 +505,7 @@ $(document).ready(function(){
                             });
                             $(".stop_calibration_verif").on('click', function(){
                                 var identifier = $(this).data('id');
-                                stopVerifyCalibration();
+                                stopVerifyCalibration(identifier);
                             });
                         }
                     });     
@@ -1709,12 +1716,50 @@ $(document).ready(function(){
     //recuperation des entrées du test final dans le dictionnaire associé
     function getFinalTest(){
         $.ajax({
-                url : 'php/api.php?function=get_final_test&param1='+family_id,
-                type : 'GET',
-                dataType : 'JSON',
-                success: function(data, statut){
-                    finalTestEntries = data;
+            url : 'php/api.php?function=get_final_test&param1='+family_id,
+            type : 'GET',
+            dataType : 'JSON',
+            success: function(data, statut){
+                
+                var finalButtonList = [];
+                var finalLedList = [];
+                var finalDisplayList = [];
+                var finalJoystickList = [];
+                var finalBuzzerList = [];
+
+
+                for(var i=0; i < data.length; i++){
                     
+                    if(data[i].type =="button"){
+                        finalButtonList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                        if(data[i].is_led =="1"){
+                            finalLedList.push({symbol_name:data[i].symbol_name, type:"led", description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                        }
+                    }else if(data[i].type =="display"){
+                        finalDisplayList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                    }else if(data[i].type =="joystick"){
+                        finalJoystickList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                    }else if(data[i].type =="buzzer"){
+                        finalBuzzerList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                    }
+                }
+
+//                for(var i=0; i < finalButtonList.length; i++){
+//                    finalTestEntriesTest.push(finalButtonList[i]);
+//                }
+//                for(var i=0; i < finalLedList.length; i++){
+//                    finalTestEntriesTest.push(finalLedList[i]);
+//                }
+//                for(var i=0; i < finalDisplayList.length; i++){
+//                    finalTestEntriesTest.push(finalDisplayList[i]);
+//                }
+//                for(var i=0; i < finalBuzzerList.length; i++){
+//                    finalTestEntriesTest.push(finalBuzzerList[i]);
+//                }
+                for(var i=0; i < finalJoystickList.length; i++){
+                    finalTestEntriesTest.push(finalJoystickList[i]);
+                }
+                            
                 }
             }
         );
@@ -1728,7 +1773,11 @@ $(document).ready(function(){
         getFinalTest();
         
         setTimeout(function(){
-            maxIndexFinal = finalTestEntries.length;
+            maxIndexFinal = finalTestEntriesTest.length;
+
+            console.log(maxIndexFinal);
+            console.log(finalTestEntriesTest);
+            
             if(maxIndexFinal > 0){
                 $("#testfinal_container .display_test_content").removeClass("hidden");
                 $("#testfinal_container #launch_final_test").addClass("hidden");
@@ -1747,21 +1796,28 @@ $(document).ready(function(){
     }
     
     //Affichage du test final en cours
-    function displayFinalTest(indexFinal){        
+    function displayFinalTest(indexFinal){   
+        userActionFinal.empty();
         var pourcentage = Math.round((indexFinal/maxIndexFinal)*100);
         
-        currSymbol_name = finalTestEntries[indexFinal].symbol_name;
-        currType = finalTestEntries[indexFinal].type;
-        currDescription = finalTestEntries[indexFinal].description;
-        currPhoto_link = finalTestEntries[indexFinal].photo_link;
-        currTimer = finalTestEntries[indexFinal].timer;
+        currSymbol_name = finalTestEntriesTest[indexFinal]["symbol_name"];
+        currType = finalTestEntriesTest[indexFinal]["type"];
+        currDescription = finalTestEntriesTest[indexFinal]["description"];
+        currPhoto_link = finalTestEntriesTest[indexFinal]["photo_link"];
+        currTimer = finalTestEntriesTest[indexFinal]["timer"];
+        currOffSignal = finalTestEntriesTest[indexFinal]["off_signal"];
+        currOnSignal = finalTestEntriesTest[indexFinal]["on_signal"];
+        
         
         launchTimer(currTimer);
         
-        var value = finalTestEntries[indexFinal].value;
-        var can_id = addHexVal(finalTestEntries[indexFinal].can_id, nodeID);
-        var pressed_val = finalTestEntries[indexFinal].pressed_val;
-        var released_val = finalTestEntries[indexFinal].released_val;
+        var can_id = addHexVal(finalTestEntriesTest[indexFinal]["can_id"], nodeID);
+        var pressed_val = finalTestEntriesTest[indexFinal]["pressed_val"];
+        var released_val = finalTestEntriesTest[indexFinal]["released_val"];
+        var postSignal = "002400806d68d7551407f09b861e3aad000549a844080000"; 
+        currSignalStart = postSignal+currOnSignal;
+        currSignalStop = postSignal+currOffSignal;
+        
         
         switch(currType){
             case "button":
@@ -1775,6 +1831,66 @@ $(document).ready(function(){
                 waitingReleaseValue = released_val;
                 console.log("waiting action :"+waitingAction+" // "+pressed_val + " / "+released_val);
                 break;
+            case "led":
+                symbolNameFinal.html("Is "+currSymbol_name+ " light on ?");
+                descriptionFinal.html(currDescription);
+                userActionFinal.html("<button class='UAyes'>YES</button><button class='UAno'>NO</button>");
+                imgFinal.attr('src', 'images/'+currPhoto_link);
+                progressBarFinalInside.css('width',pourcentage+'%');
+                progressBarFinal.html(pourcentage+'%');                               
+              
+                sendSignal(currSignalStart);
+                
+                userActionFinal.find(".UAyes").on('click', function(){
+                    validateTest = 1;
+                    sendSignal(currSignalStop);
+                });
+                userActionFinal.find(".UAno").on('click', function(){
+                    sendSignal(currSignalStop);
+                    nextStepFinal("fail");
+                });
+                
+                break;
+            case "display":
+                symbolNameFinal.html("Is display "+currSymbol_name+ " light on ?");
+                descriptionFinal.html(currDescription);
+                userActionFinal.html("<button class='UAyes'>YES</button><button class='UAno'>NO</button>");
+                imgFinal.attr('src', 'images/'+currPhoto_link);
+                progressBarFinalInside.css('width',pourcentage+'%');
+                progressBarFinal.html(pourcentage+'%');                               
+              
+                sendSignal(currSignalStart);
+                
+                userActionFinal.find(".UAyes").on('click', function(){
+                    validateTest = 1;
+                    sendSignal(currSignalStop);
+                });
+                userActionFinal.find(".UAno").on('click', function(){
+                    sendSignal(currSignalStop);
+                    nextStepFinal("fail");
+                });
+                
+                break;
+            case "buzzer":
+                symbolNameFinal.html("Do you hear buzzer ?");
+                descriptionFinal.html(currDescription);
+                userActionFinal.html("<button class='UAyes'>YES</button><button class='UAno'>NO</button>");
+                imgFinal.attr('src', 'images/'+currPhoto_link);
+                progressBarFinalInside.css('width',pourcentage+'%');
+                progressBarFinal.html(pourcentage+'%');                               
+              
+                sendSignal(currSignalStart);
+                
+                userActionFinal.find(".UAyes").on('click', function(){
+                    validateTest = 1;
+                    sendSignal(currSignalStop);
+                });
+                userActionFinal.find(".UAno").on('click', function(){
+                    sendSignal(currSignalStop);
+                    nextStepFinal("fail");
+                });
+                
+                break;
             case "joystick":
                 break;
         }
@@ -1786,10 +1902,12 @@ $(document).ready(function(){
         indexFinal++;
         timerBloc.html("");
         clearInterval(intervalGlobal);
+        var line = "";
         if(result == "ok"){
-            var line = "<div class='line'><span class='symbol'>"+currSymbol_name+"</span> - <span class='description'>"+currDescription+"</span><span class='type'>"+currType+"</span><span class='result green'>TEST OK</span></div>";
-        }else{
-            var line = "<div class='line'><span class='symbol'>"+currSymbol_name+"</span> - <span class='description'>"+currDescription+"</span><span class='type'>"+currType+"</span><span class='result red'>TEST FAIL</span></div>";
+            line = "<div class='line'><span class='symbol'>"+currSymbol_name+"</span> - <span class='description'>"+currDescription+"</span><span class='type'>"+currType+"</span><span class='result green'>TEST OK</span></div>";
+        }
+        else{
+            line = "<div class='line'><span class='symbol'>"+currSymbol_name+"</span> - <span class='description'>"+currDescription+"</span><span class='type'>"+currType+"</span><span class='result red'>TEST FAIL</span></div>";
             errorTestFinal ++;
         }
         recapListFinal.append(line);
@@ -1806,7 +1924,11 @@ $(document).ready(function(){
     function launchTimer(timer){
         var time = timer*1000;
         intervalGlobal = setInterval(function(){ 
-            if(timer == 0){
+            if(timer <= 0){
+                if(currType == "led" || currType == "display"){
+                     console.log("send signal "+currType);
+                     sendSignal(currSignalStop)
+                }               
                 nextStepFinal("fail");                
             }else{
                 if(validateTest == 1){
@@ -1816,10 +1938,10 @@ $(document).ready(function(){
                     waitingAction = "";
                     nextStepFinal("ok");
                 }
-                timerBloc.html(timer);
-                timer -= 1;
+                timerBloc.html(Math.round(timer));
+                timer -= 0.1;
             }            
-        }, 1000);
+        }, 100);
     };
     
     //Interrupt or end Final test
@@ -2013,7 +2135,7 @@ $(document).ready(function(){
         });
     };
     
-    function  mushroomZeroPosAcquisition(subindex, identifier){
+    function mushroomZeroPosAcquisition(subindex, identifier){
         $(".bloc_calibrate.id"+identifier).find(".status_calib").html("Set Zero Position");
         $(".bloc_calibrate.id"+identifier).find(".action_calib").html("<img src='images/zero_arrow.png'>");
         $(".bloc_calibrate.id"+identifier).find(".validate_calib").on('click', function(){
@@ -2185,7 +2307,21 @@ $(document).ready(function(){
         $(".bloc_calibrate.id"+identifier).find(".validate_calib").on('click', function(){            
             $(".bloc_calibrate.id"+identifier).find(".calibrate_tool").addClass("hidden");
             $(".bloc_calibrate.id"+identifier).find("button").removeClass("hidden");
-            $(".bloc_calibrate.id"+identifier).find(".validate_calib").off();                  
+            $(".bloc_calibrate.id"+identifier).find(".validate_calib").off(); 
+            
+            
+            var descri = $(".id"+identifier+" .title_jauge").html();
+            $(".statut_calibration_verif").removeClass("hidden");
+            $(".statut_calibration_verif").find(".id"+identifier+"").remove();
+            $(".statut_calibration_verif").append("<div class='line_validate_calib id"+identifier+"'><img class='check_calib' src='images/check.png'>Joystick <b>"+descri+ "</b> is calibrated</div>");
+            
+            setTimeout(function(){
+                var count = $("#content_calibration .calibration_zone_container .bloc_calibrate").length;
+                var count2 = $(".statut_calibration_verif .line_validate_calib").length;                
+                if(count == count2){
+                    $(".continue_to_finaltest").removeClass("hidden");
+                }
+            },200);
         });
     };
     
@@ -2207,6 +2343,9 @@ $(document).ready(function(){
         }
     }); 
     function startVerifyCalibration(subindexX, subindexY, identifier){
+        $(".id"+identifier).addClass("blink_me");
+        $(".verify_calibration.id"+identifier).addClass("hidden");
+        $(".stop_calibration_verif.id"+identifier).removeClass("hidden");
         currentIdentifier = identifier;
         //alert("start with "+currentIdentifier);
         currentSubindexX = subindexX;
@@ -2218,9 +2357,12 @@ $(document).ready(function(){
              pingGetAxisValue(subindexX, subindexY, identifier);
         },200);
     };    
-    function stopVerifyCalibration(){
+    function stopVerifyCalibration(identifier){
+        $(".verify_calibration.id"+identifier).removeClass("hidden");
+        $(".stop_calibration_verif.id"+identifier).addClass("hidden");
         clearInterval(intervalVerify);
         _MODE = "CALIBRATION";
+        $(".id"+identifier).removeClass("blink_me");
     }
     function updateVerifyData(verifyVal, axis, currentIdentifier){
         var xValMin = joystickVerifyContainer.find(".id"+currentIdentifier+" .minx_value_joy").html();    
@@ -2286,6 +2428,17 @@ $(document).ready(function(){
     }
     
     
+    $(".popup_test_fw_final .bt_no").on('click', function(){
+        sendSignal(Cal_post+Cal_dlc+cobID2+"2f00550100000000");
+    });
+    
+    $(".download_test_fw_content_final .bt_continue_finaltest").on('click', function(){
+        sendSignal(Cal_post+Cal_dlc+cobID2+"2f00550100000000");
+    });
+    
+    $(".continue_to_finaltest").on('click', function(){
+        sendSignal(Cal_post+Cal_dlc+cobID2+"2f00550101000000");
+    });
     
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2969,59 +3122,7 @@ $(document).ready(function(){
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////// EMERGENCY STOP PROCESS ///////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    function startEmergencyStopProcess(){
-        $(".emergency_stop_bt").off();        
-//        intervalSpe = setInterval(function(){
-//            sendSignal("002400806d68d7551407f09b861e3aad000549a844010000000007180500000000000000");
-//        },100);        
-        $(".emergency_stop_bt").html("Send CLR Command");
         
-        $(".emergency_stop_bt").on('click', function(){            
-            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300143000000");
-            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F0030024C000000");
-            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F00300352000000");
-            $(".emergency_stop_bt").off();
-            $(".emergency_stop_bt").html("Send SET Command");            
-            
-            $(".emergency_stop_bt").on('click', function(){
-                $(".emergency_stop_bt").off();
-                $(".emergency_stop_bt").html("Send CLR Command");
-                sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300153000000");
-                sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300245000000");
-                sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300354000000");                
-                
-                $(".emergency_stop_bt").on('click', function(){
-                    $(".emergency_stop_bt").off();
-                    $(".emergency_stop_bt").html("Send DWN Command");
-                    sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300143000000");
-                    sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F0030024C000000");
-                    sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300352000000");
-                    
-                    
-                    $(".emergency_stop_bt").on('click', function(){
-                        $(".emergency_stop_bt").off();
-                        $(".emergency_stop_bt").html("Send CLR Command");
-                        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300144000000");
-                        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300257000000");
-                        sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F0030034E000000");
-                        $(".emergency_stop_bt").on('click', function(){
-                            $(".emergency_stop_bt").html("Emergency Stop TEST");
-                            $(".emergency_stop_bt").off();
-                            sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300143000000");
-                            sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F0030024C000000");
-                            sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300352000000");
-                            //clearInterval(intervalSpe);
-                            $(".emergency_stop_bt").on('click', function(){
-                                startEmergencyStopProcess();                                
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    };
-    
     $(".emergency_container .emergency").on('click', function(){
         if($(this).hasClass('on')){
             $(this).removeClass('on');
@@ -3050,6 +3151,7 @@ $(document).ready(function(){
         sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F00300257000000");
         sendSignal("002400806d68d7551407f09b861e3aad000549a844050000"+cobID2+"2F0030034E000000");
     });
+    
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////// ON CLICK FUNCTION ////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3098,9 +3200,7 @@ $(document).ready(function(){
         _MODE = "PRETEST";
         sendSignal("002400806d68d7551407f09b861e3aad000549a84402000000000000012D000000000000");
     });
-    $(".emergency_stop_bt").on('click', function(){
-        startEmergencyStopProcess();
-    });
+    
     
     
     //switch de panel sur la toolbox ingé
@@ -3262,6 +3362,15 @@ $(document).ready(function(){
     function hexadecimalToDecimal(hexadecimalValue) {
         return parseInt(hexadecimalValue, 16);
     };
+    
+    function shuffleArray(array) {
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
     
     
 });
