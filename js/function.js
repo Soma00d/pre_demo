@@ -85,6 +85,10 @@ $(document).ready(function(){
     var finalTestEntries = {};     
     var finalTestEntriesTest = [];     
     var waitingAction;
+    var waitingID;
+    var waitingXpos;
+    var waitingYpos;
+    var last_value_joy = 0;
     var waitingPressValue;
     var waitingReleaseValue;
     var pressValueContinue;
@@ -1016,6 +1020,95 @@ $(document).ready(function(){
                                     waitingAction = "";
                                 }
                                 break;
+                            case "JOYSTICK_X_LEFT":
+                                if(waitingID == canId){
+                                   var oct1 = parseInt(waitingXpos);
+                                   var instant_value_joy = canData.substring(oct1, oct1+2);
+                                   instant_value_joy = convertHexa(instant_value_joy);
+                                   if(instant_value_joy < 0){
+                                        if(instant_value_joy <= last_value_joy){                                       
+                                           console.log("last : "+last_value_joy, "instant : "+instant_value_joy);
+                                           last_value_joy = instant_value_joy;
+                                           if(instant_value_joy== -100){  
+                                               descriptionFinal.html("Please move "+currDescription+" to RIGHT..");
+                                               last_value_joy = 0;
+                                               waitingAction = "JOYSTICK_X_RIGHT";
+                                           }
+                                       }else{
+                                           console.log("ERROR last : "+last_value_joy, "instant : "+instant_value_joy)
+                                           //nextStepFinal("fail");
+                                       }
+                                   }
+                                   
+                                }
+                                break;
+                            case "JOYSTICK_X_RIGHT":
+                                if(waitingID == canId){
+                                   var oct1 = parseInt(waitingXpos);
+                                   var instant_value_joy = canData.substring(oct1, oct1+2);
+                                   instant_value_joy = convertHexa(instant_value_joy);
+                                   if(instant_value_joy > 0){
+                                        if(instant_value_joy >= last_value_joy){                                       
+                                            console.log("last : "+last_value_joy, "instant : "+instant_value_joy);
+                                            last_value_joy = instant_value_joy;
+                                            if(instant_value_joy== 100){ 
+                                                if(waitingYpos != ""){   
+                                                    descriptionFinal.html("Please move "+currDescription+" to BOTTOM..");
+                                                    waitingAction = "JOYSTICK_Y_BOTTOM";
+                                                    last_value_joy = 0;
+                                                }else{
+                                                    validateTest = 1;
+                                                }
+                                            }
+                                        }else{
+                                            console.log("ERROR last : "+last_value_joy, "instant : "+instant_value_joy)
+                                            //nextStepFinal("fail");
+                                        }
+                                    }
+                                }
+                                break;
+                            case "JOYSTICK_Y_BOTTOM":
+                                if(waitingID == canId){
+                                   var oct1 = parseInt(waitingYpos);
+                                   var instant_value_joy = canData.substring(oct1,oct1+2);
+                                   instant_value_joy = convertHexa(instant_value_joy);
+                                   if(instant_value_joy < 0){
+                                        if(instant_value_joy <= last_value_joy){                                       
+                                            console.log("last : "+last_value_joy, "instant : "+instant_value_joy);
+                                            last_value_joy = instant_value_joy;
+                                            if(instant_value_joy== -100){ 
+                                                descriptionFinal.html("Please move "+currDescription+" to TOP..");
+                                                last_value_joy = 0;
+                                                waitingAction = "JOYSTICK_Y_TOP";
+                                            }
+                                        }else{
+                                            console.log("ERROR last : "+last_value_joy, "instant : "+instant_value_joy)
+                                            //nextStepFinal("fail");
+                                        }
+                                    }
+                                }
+                                break;
+                            case "JOYSTICK_Y_TOP":
+                                if(waitingID == canId){
+                                   var oct1 = parseInt(waitingYpos);
+                                   var instant_value_joy = canData.substring(oct1, oct1+2);
+                                   instant_value_joy = convertHexa(instant_value_joy);
+                                   if(instant_value_joy > 0){
+                                        if(instant_value_joy >= last_value_joy){                                       
+                                            console.log("last : "+last_value_joy, "instant : "+instant_value_joy);
+                                            last_value_joy = instant_value_joy;
+                                            if(instant_value_joy == 100){                                           
+                                                 last_value_joy = 0;
+                                                 validateTest = 1;
+                                                 waitingAction = "";
+                                            }
+                                        }else{
+                                            console.log("ERROR last : "+last_value_joy, "instant : "+instant_value_joy)
+                                            //nextStepFinal("fail");
+                                        }
+                                    }
+                                }
+                                break;
                         }
                     }
                 }
@@ -1092,12 +1185,14 @@ $(document).ready(function(){
                     var enableVoltage = message.env;
                     var srtl = message.srtl;
                     var globalVoltage = message.globv;
+                    var tsuiVoltage = message.tsuiv;
                     
                     safetyFrequency = convertHexaPic(safetyFrequency);
                     safetyVoltage = convertHexaPic(safetyVoltage)/51/0.138;
                     enableFrequency = convertHexaPic(enableFrequency);
                     enableVoltage = convertHexaPic(enableVoltage)/51/0.138;
                     globalVoltage = convertHexaPic(globalVoltage)/51/0.1375;
+                    tsuiVoltage = convertHexaPic(tsuiVoltage)/51/0.1375;
 
                     safetyFreqContainer.html(safetyFrequency);
                     safetyVoltContainer.html(safetyVoltage.toFixed(2));
@@ -1720,7 +1815,7 @@ $(document).ready(function(){
             type : 'GET',
             dataType : 'JSON',
             success: function(data, statut){
-                
+                finalTestEntriesTest = [];
                 var finalButtonList = [];
                 var finalLedList = [];
                 var finalDisplayList = [];
@@ -1738,7 +1833,7 @@ $(document).ready(function(){
                     }else if(data[i].type =="display"){
                         finalDisplayList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
                     }else if(data[i].type =="joystick"){
-                        finalJoystickList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                        finalJoystickList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, x_pos:data[i].x_pos, y_pos:data[i].y_pos});
                     }else if(data[i].type =="buzzer"){
                         finalBuzzerList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
                     }
@@ -1837,10 +1932,8 @@ $(document).ready(function(){
                 userActionFinal.html("<button class='UAyes'>YES</button><button class='UAno'>NO</button>");
                 imgFinal.attr('src', 'images/'+currPhoto_link);
                 progressBarFinalInside.css('width',pourcentage+'%');
-                progressBarFinal.html(pourcentage+'%');                               
-              
+                progressBarFinal.html(pourcentage+'%');  
                 sendSignal(currSignalStart);
-                
                 userActionFinal.find(".UAyes").on('click', function(){
                     validateTest = 1;
                     sendSignal(currSignalStop);
@@ -1849,7 +1942,6 @@ $(document).ready(function(){
                     sendSignal(currSignalStop);
                     nextStepFinal("fail");
                 });
-                
                 break;
             case "display":
                 symbolNameFinal.html("Is display "+currSymbol_name+ " light on ?");
@@ -1857,10 +1949,8 @@ $(document).ready(function(){
                 userActionFinal.html("<button class='UAyes'>YES</button><button class='UAno'>NO</button>");
                 imgFinal.attr('src', 'images/'+currPhoto_link);
                 progressBarFinalInside.css('width',pourcentage+'%');
-                progressBarFinal.html(pourcentage+'%');                               
-              
+                progressBarFinal.html(pourcentage+'%');     
                 sendSignal(currSignalStart);
-                
                 userActionFinal.find(".UAyes").on('click', function(){
                     validateTest = 1;
                     sendSignal(currSignalStop);
@@ -1869,7 +1959,6 @@ $(document).ready(function(){
                     sendSignal(currSignalStop);
                     nextStepFinal("fail");
                 });
-                
                 break;
             case "buzzer":
                 symbolNameFinal.html("Do you hear buzzer ?");
@@ -1877,10 +1966,8 @@ $(document).ready(function(){
                 userActionFinal.html("<button class='UAyes'>YES</button><button class='UAno'>NO</button>");
                 imgFinal.attr('src', 'images/'+currPhoto_link);
                 progressBarFinalInside.css('width',pourcentage+'%');
-                progressBarFinal.html(pourcentage+'%');                               
-              
+                progressBarFinal.html(pourcentage+'%');  
                 sendSignal(currSignalStart);
-                
                 userActionFinal.find(".UAyes").on('click', function(){
                     validateTest = 1;
                     sendSignal(currSignalStop);
@@ -1889,9 +1976,43 @@ $(document).ready(function(){
                     sendSignal(currSignalStop);
                     nextStepFinal("fail");
                 });
-                
                 break;
             case "joystick":
+                var x_pos = finalTestEntriesTest[indexFinal]["x_pos"].trim();
+                var y_pos = finalTestEntriesTest[indexFinal]["y_pos"].trim();
+                progressBarFinalInside.css('width',pourcentage+'%');
+                progressBarFinal.html(pourcentage+'%');  
+                if(x_pos != "" && y_pos != ""){
+                    waitingXpos = x_pos;
+                    waitingYpos = y_pos;
+                    symbolNameFinal.html("Test "+currDescription);
+                    imgFinal.attr('src', 'images/'+currPhoto_link);
+                    descriptionFinal.html("Please move "+currDescription+" to LEFT..");
+                    last_value_joy = 0;
+                    waitingAction = "JOYSTICK_X_LEFT";
+                    waitingID = can_id;
+                }
+                if(x_pos != "" && y_pos == ""){
+                    waitingXpos = x_pos;
+                    waitingYpos = "";
+                    symbolNameFinal.html("Test "+currDescription);
+                    imgFinal.attr('src', 'images/'+currPhoto_link);
+                    descriptionFinal.html("Please move "+currDescription+" to LEFT..");
+                    last_value_joy = 0;
+                    waitingAction = "JOYSTICK_X_LEFT";
+                    waitingID = can_id;
+                }
+                if(x_pos == "" && y_pos != ""){
+                    waitingYpos = y_pos;
+                    waitingXpos = "";
+                    symbolNameFinal.html("Test "+currDescription);
+                    imgFinal.attr('src', 'images/'+currPhoto_link);
+                    descriptionFinal.html("Please move "+currDescription+" to BOTTOM..");
+                    last_value_joy = 0;
+                    waitingAction = "JOYSTICK_Y_BOTTOM";
+                    waitingID = can_id;
+                }
+                
                 break;
         }
         
