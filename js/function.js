@@ -3,6 +3,7 @@ $(document).ready(function(){
     var ws = new WebSocket("ws://localhost:8100");  
     var dictionary = {};  
     var jsonLog = [];
+    
     //------//
     var lineContainer = $("#content_pretest .result_array");
     var buttonContainer = $("#content_pretest .button_container");
@@ -62,6 +63,9 @@ $(document).ready(function(){
     var nodeID;
     var cobID1;
     var cobID2;
+    var FWfctV = "";
+    var FWcalibV = "";
+    var SWv = "";
     
     var activeSearchHistoryResult = {};
     
@@ -96,7 +100,7 @@ $(document).ready(function(){
     var validateTest = 0;
     var errorTestFinal = 0;
     
-    var waitingValue;    
+    var waitingEnable;    
     var indexFinal;
     var maxIndexFinal;
     var intervalGlobal;    
@@ -109,6 +113,15 @@ $(document).ready(function(){
     var currOnSignal;
     var currSignalStart;
     var currSignalStop;
+    var currStandardName;
+    var enableF;
+    var enableT;
+    var isEnable;
+    var isCdrh;
+    var currEnableT;
+    var currEnableF;
+    var currGlobalVoltage;
+    var currTsuiVoltage;
     
     //Spybox
     var spyBox = $("#dialog-spybox .content_line");
@@ -777,6 +790,13 @@ $(document).ready(function(){
             $(".boot_config").html(newsoftwareRelease);
             $(".fpga_config").html(newFPGARelease);
             $(".sw_config").html(newBootRelease);
+            if(newBootRelease.substring(0,1)== "c"){
+                FWcalibV = newBootRelease;
+            }else{
+                FWfctV = newBootRelease;
+            }
+            SWv = newsoftwareRelease;
+            
             $(".unic_config").html(newunicID);
             
             _MODE = "PRETEST";
@@ -1011,8 +1031,13 @@ $(document).ready(function(){
                             case "BUTTON":
                                 if(waitingPressValue == canData){
                                     pressValueContinue = 1;
+                                    
                                 }
                                 if(waitingReleaseValue == canData){
+                                    if(waitingEnable == 1){
+                                        console.log("on detecte le cas rel du bouton enable et on lance la fct")
+                                        setEnableValues();
+                                    }
                                     releaseValueContinue = 1;
                                 }
                                 if(pressValueContinue == 1 && releaseValueContinue == 1){
@@ -1036,7 +1061,7 @@ $(document).ready(function(){
                                            }
                                        }else{
                                            console.log("ERROR last : "+last_value_joy, "instant : "+instant_value_joy)
-                                           //nextStepFinal("fail");
+                                           nextStepFinal("fail");
                                        }
                                    }
                                    
@@ -1062,7 +1087,7 @@ $(document).ready(function(){
                                             }
                                         }else{
                                             console.log("ERROR last : "+last_value_joy, "instant : "+instant_value_joy)
-                                            //nextStepFinal("fail");
+                                            nextStepFinal("fail");
                                         }
                                     }
                                 }
@@ -1083,7 +1108,7 @@ $(document).ready(function(){
                                             }
                                         }else{
                                             console.log("ERROR last : "+last_value_joy, "instant : "+instant_value_joy)
-                                            //nextStepFinal("fail");
+                                            nextStepFinal("fail");
                                         }
                                     }
                                 }
@@ -1104,13 +1129,37 @@ $(document).ready(function(){
                                             }
                                         }else{
                                             console.log("ERROR last : "+last_value_joy, "instant : "+instant_value_joy)
-                                            //nextStepFinal("fail");
+                                            nextStepFinal("fail");
                                         }
                                     }
                                 }
                                 break;
                         }
                     }
+                }else if(message.type =="from_pic"){
+                    
+                    var safetyFrequency = message.slf;
+                    var safetyVoltage = message.slv;
+                    var enableFrequency = message.enf;
+                    var enableVoltage = message.env;
+                    var srtl = message.srtl;
+                    var globalVoltage = message.globv;
+                    var tsuiVoltage = message.tsuiv;
+                    
+                    safetyFrequency = convertHexaPic(safetyFrequency);
+                    safetyVoltage = convertHexaPic(safetyVoltage)/51/0.138;
+                    enableFrequency = convertHexaPic(enableFrequency);
+                    enableVoltage = convertHexaPic(enableVoltage)/51/0.138;
+                    globalVoltage = convertHexaPic(globalVoltage)/51/0.1375;
+                    tsuiVoltage = convertHexaPic(tsuiVoltage)/51/0.1375;
+                    
+                    currEnableT = enableVoltage;
+                    currEnableF = enableFrequency;
+                    currGlobalVoltage = globalVoltage;
+                    currTsuiVoltage = tsuiVoltage;
+
+                                        
+                    
                 }
                 break;
             case "CALIBRATION":                 
@@ -1825,23 +1874,23 @@ $(document).ready(function(){
 
                 for(var i=0; i < data.length; i++){
                     
-                    if(data[i].type =="button"){
-                        finalButtonList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                    if(data[i].type =="button" && data[i].is_enable == 1){
+                        finalButtonList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
                         if(data[i].is_led =="1"){
                             finalLedList.push({symbol_name:data[i].symbol_name, type:"led", description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
                         }
                     }else if(data[i].type =="display"){
-                        finalDisplayList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                        finalDisplayList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
                     }else if(data[i].type =="joystick"){
-                        finalJoystickList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, x_pos:data[i].x_pos, y_pos:data[i].y_pos});
+                        finalJoystickList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, x_pos:data[i].x_pos, y_pos:data[i].y_pos, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
                     }else if(data[i].type =="buzzer"){
-                        finalBuzzerList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                        finalBuzzerList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
                     }
                 }
 
-//                for(var i=0; i < finalButtonList.length; i++){
-//                    finalTestEntriesTest.push(finalButtonList[i]);
-//                }
+                for(var i=0; i < finalButtonList.length; i++){
+                    finalTestEntriesTest.push(finalButtonList[i]);
+                }
 //                for(var i=0; i < finalLedList.length; i++){
 //                    finalTestEntriesTest.push(finalLedList[i]);
 //                }
@@ -1851,9 +1900,9 @@ $(document).ready(function(){
 //                for(var i=0; i < finalBuzzerList.length; i++){
 //                    finalTestEntriesTest.push(finalBuzzerList[i]);
 //                }
-                for(var i=0; i < finalJoystickList.length; i++){
-                    finalTestEntriesTest.push(finalJoystickList[i]);
-                }
+//                for(var i=0; i < finalJoystickList.length; i++){
+//                    finalTestEntriesTest.push(finalJoystickList[i]);
+//                }
                             
                 }
             }
@@ -1902,7 +1951,17 @@ $(document).ready(function(){
         currTimer = finalTestEntriesTest[indexFinal]["timer"];
         currOffSignal = finalTestEntriesTest[indexFinal]["off_signal"];
         currOnSignal = finalTestEntriesTest[indexFinal]["on_signal"];
+        currStandardName = finalTestEntriesTest[indexFinal]["standard_name"];
+        enableF = "";
+        enableT = "";
+        isCdrh = finalTestEntriesTest[indexFinal]["is_cdrh"];
+        isEnable = finalTestEntriesTest[indexFinal]["is_enable"];        
         
+        if(isEnable == 1){
+            console.log("is enable");
+            waitingEnable = 1;
+            sendSignalPic("1");
+        }
         
         launchTimer(currTimer);
         
@@ -2025,11 +2084,20 @@ $(document).ready(function(){
         clearInterval(intervalGlobal);
         var line = "";
         if(result == "ok"){
-            line = "<div class='line'><span class='symbol'>"+currSymbol_name+"</span> - <span class='description'>"+currDescription+"</span><span class='type'>"+currType+"</span><span class='result green'>TEST OK</span></div>";
+            line = "<div class='line' data-standard='"+currStandardName+"' data-enablef='"+enableF+"' data-enablet='"+enableT+"' data-iscdrh='"+isCdrh+"' data-isenable='"+isEnable+"'><span class='symbol'>"+currSymbol_name+"</span> - <span class='description'>"+currDescription+"</span><span class='type'>"+currType+"</span><span class='result green'>TEST OK</span></div>";
+            if(isEnable == 1){
+                console.log("on a enregistré une ligne enable avec enableF :"+enableF+" et enableT :"+enableT);
+                waitingEnable = 0;
+                sendSignalPic("2");
+            }
         }
         else{
-            line = "<div class='line'><span class='symbol'>"+currSymbol_name+"</span> - <span class='description'>"+currDescription+"</span><span class='type'>"+currType+"</span><span class='result red'>TEST FAIL</span></div>";
+            line = "<div class='line' data-standard='"+currStandardName+"' data-enablef='"+enableF+"' data-enablet='"+enableT+"' data-iscdrh='"+isCdrh+"' data-isenable='"+isEnable+"'><span class='symbol'>"+currSymbol_name+"</span> - <span class='description'>"+currDescription+"</span><span class='type'>"+currType+"</span><span class='result red'>TEST FAIL</span></div>";
             errorTestFinal ++;
+            if(isEnable == 1){
+                waitingEnable = 0;
+                sendSignalPic("2");
+            }
         }
         recapListFinal.append(line);
         var d = recapListFinal.get(0);
@@ -2100,22 +2168,37 @@ $(document).ready(function(){
         var description;
         var result;
         var type;
+        var standardName;
+        var enableF;
+        var enableT;
+        var isCdrh;
+        var isEnable;
         $("#recap_list_t .content_recap .line").each(function(){            
             name = $(this).find('.symbol').html();
             description = $(this).find('.description').html();
             type = $(this).find('.type').html();
             result = $(this).find('.result').html();
+            standardName = $(this).data('standard');
+            enableF = $(this).data('enablef');
+            enableT = $(this).data('enablet');
+            isCdrh = $(this).data('iscdrh');
+            isEnable = $(this).data('isenable');
 
-            jsonLogFinal.push({name:name, description:description, type:type, result:result });            
+            jsonLogFinal.push({name:name, standard_name:standardName, description:description, type:type, result:result, enable_freq:enableF, enable_tens:enableT, is_cdrh:isCdrh, is_enable:isEnable });            
         });
         console.log(jsonLogFinal);
         console.log("------");
         jsonLogFinal = JSON.stringify(jsonLogFinal);
         console.log(jsonLogFinal);
+        sendSignalPic("1");
+        setTimeout(function(){
+            sendSignalPic("2");
+        },500)
+        
         $.ajax({
             type: "POST",
             url: "php/api.php?function=save_log_final",
-            data: {jsonlog:jsonLogFinal},
+            data: {jsonlog:jsonLogFinal, sn:serialNumber, pn:partNumber, sso:userSSO, FWfctV:FWfctV, FWcalibV:FWcalibV, SWv:SWv, alim_tsui:currGlobalVoltage, enable_tens:currTsuiVoltage, enable_freq:currEnableF, alim_testbench:currEnableT},
             success: function (msg) {
                 alert("Your log has been saved.");
                 printJsonLogFinal(jsonLogFinal);
@@ -2182,6 +2265,12 @@ $(document).ready(function(){
         myWindow.print();
         myWindow.close();
     };
+    
+    function setEnableValues(){
+        enableF = currEnableF;
+        enableT = currEnableT;
+        console.log("on a set enableF :"+enableF+" et enableT :"+enableT);
+    }
     
     
     

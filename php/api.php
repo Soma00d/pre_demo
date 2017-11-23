@@ -94,22 +94,36 @@ $saveLogPretest = function ($connexion){
 //enregistre les log d'un testfinal
 $saveLogFinal = function ($connexion){
     $jsonlog = $_POST['jsonlog'];
-    $user_sso = 'testuserfinal';
-    $pn = 'testPNFinal';
-    $serial = 'testSerialFinal';
+    $user_sso = $_POST['sso'];
+    $pn = $_POST['pn'];
+    $serial = $_POST['sn'];
     $role = 'repair';
     $type = 'finaltest';
+    $fw_fct_version = $_POST['FWfctV'];
+    $fw_calib_version = $_POST['FWfctV'];
+    $sw_version = $_POST['SWv'];
     
-    $stmt = $connexion->prepare("INSERT INTO global_log (json_log, part_number, serial_number, user_sso, role, type, date) VALUES (:jsonlog, :partnumber, :serialnumber, :user_sso, :role, :type, NOW())");
+    $alim_tsui = $_POST['alim_tsui'];
+    $alim_testbench = $_POST['alim_testbench'];
+    $enable_tens = $_POST['enable_tens'];
+    $enable_freq = $_POST['enable_freq'];
+    
+    $stmt = $connexion->prepare("INSERT INTO global_log (json_log, part_number, serial_number, user_sso, role, type, fw_fct_version, fw_calib_version, sw_version, alim_tsui, alim_testbench, enable_tens, enable_freq, date) VALUES (:jsonlog, :partnumber, :serialnumber, :user_sso, :role, :type,:fwfctv, :fwcalibv, :swv, :alimtsui, :alimtestbench, :enabletens, :enablefreq, NOW())");
     $stmt->bindParam(':jsonlog', $jsonlog);
     $stmt->bindParam(':partnumber', $pn);
     $stmt->bindParam(':serialnumber', $serial);
     $stmt->bindParam(':user_sso', $user_sso);
     $stmt->bindParam(':role', $role);
     $stmt->bindParam(':type', $type);
+    $stmt->bindParam(':fwfctv', $fw_fct_version);
+    $stmt->bindParam(':fwcalibv', $fw_calib_version);    
+    $stmt->bindParam(':swv', $sw_version);
+    $stmt->bindParam(':alimtsui', $alim_tsui);
+    $stmt->bindParam(':alimtestbench', $alim_testbench);
+    $stmt->bindParam(':enabletens', $enable_tens);
+    $stmt->bindParam(':enablefreq', $enable_freq);
     
     $stmt->execute();
-    
     
 };
 
