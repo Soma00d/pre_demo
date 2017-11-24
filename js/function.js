@@ -1158,7 +1158,7 @@ $(document).ready(function(){
                     currGlobalVoltage = globalVoltage;
                     currTsuiVoltage = tsuiVoltage;
 
-                                        
+                    console.log("val tens"+currEnableT+" "+currEnableF+" "+currGlobalVoltage+" "+currTsuiVoltage)                
                     
                 }
                 break;
@@ -1874,10 +1874,10 @@ $(document).ready(function(){
 
                 for(var i=0; i < data.length; i++){
                     
-                    if(data[i].type =="button" && data[i].is_enable == 1){
+                    if(data[i].type =="button"){
                         finalButtonList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
                         if(data[i].is_led =="1"){
-                            finalLedList.push({symbol_name:data[i].symbol_name, type:"led", description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val});
+                            finalLedList.push({symbol_name:data[i].symbol_name, type:"led", description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
                         }
                     }else if(data[i].type =="display"){
                         finalDisplayList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
@@ -1891,18 +1891,18 @@ $(document).ready(function(){
                 for(var i=0; i < finalButtonList.length; i++){
                     finalTestEntriesTest.push(finalButtonList[i]);
                 }
-//                for(var i=0; i < finalLedList.length; i++){
-//                    finalTestEntriesTest.push(finalLedList[i]);
-//                }
-//                for(var i=0; i < finalDisplayList.length; i++){
-//                    finalTestEntriesTest.push(finalDisplayList[i]);
-//                }
-//                for(var i=0; i < finalBuzzerList.length; i++){
-//                    finalTestEntriesTest.push(finalBuzzerList[i]);
-//                }
-//                for(var i=0; i < finalJoystickList.length; i++){
-//                    finalTestEntriesTest.push(finalJoystickList[i]);
-//                }
+                for(var i=0; i < finalLedList.length; i++){
+                    finalTestEntriesTest.push(finalLedList[i]);
+                }
+                for(var i=0; i < finalDisplayList.length; i++){
+                    finalTestEntriesTest.push(finalDisplayList[i]);
+                }
+                for(var i=0; i < finalBuzzerList.length; i++){
+                    finalTestEntriesTest.push(finalBuzzerList[i]);
+                }
+                for(var i=0; i < finalJoystickList.length; i++){
+                    finalTestEntriesTest.push(finalJoystickList[i]);
+                }
                             
                 }
             }
@@ -1915,7 +1915,11 @@ $(document).ready(function(){
         errorTestFinal = 0;
         _MODE = "TESTFINAL";
         getFinalTest();
-        
+        sendSignalPic("1");
+        setTimeout(function(){
+            console.log("")
+            sendSignalPic("2");
+        },500);
         setTimeout(function(){
             maxIndexFinal = finalTestEntriesTest.length;
 
@@ -2186,70 +2190,76 @@ $(document).ready(function(){
 
             jsonLogFinal.push({name:name, standard_name:standardName, description:description, type:type, result:result, enable_freq:enableF, enable_tens:enableT, is_cdrh:isCdrh, is_enable:isEnable });            
         });
-        console.log(jsonLogFinal);
-        console.log("------");
         jsonLogFinal = JSON.stringify(jsonLogFinal);
         console.log(jsonLogFinal);
-        sendSignalPic("1");
-        setTimeout(function(){
-            sendSignalPic("2");
-        },500)
+        
         
         $.ajax({
             type: "POST",
             url: "php/api.php?function=save_log_final",
-            data: {jsonlog:jsonLogFinal, sn:serialNumber, pn:partNumber, sso:userSSO, FWfctV:FWfctV, FWcalibV:FWcalibV, SWv:SWv, alim_tsui:currGlobalVoltage, enable_tens:currTsuiVoltage, enable_freq:currEnableF, alim_testbench:currEnableT},
+            data: {jsonlog:jsonLogFinal, sn:serialNumber, pn:partNumber, sso:userSSO, FWfctV:FWfctV, FWcalibV:FWcalibV, SWv:SWv, alim_tsui:currTsuiVoltage, enable_tens:currEnableT, enable_freq:currEnableF, alim_testbench:currGlobalVoltage},
             success: function (msg) {
                 alert("Your log has been saved.");
-                printJsonLogFinal(jsonLogFinal);
+                printJsonLogFinal(jsonLogFinal, serialNumber, partNumber, userSSO, FWfctV, FWcalibV, SWv, currGlobalVoltage, currTsuiVoltage, currEnableF, currEnableT);
             }
         });
     };
     
     //Generation du rapport de test et affichage de la fenetre d'impression 
-    function printJsonLogFinal(jsonLog){  
-        var msg = JSON.parse(jsonLog);
+    function printJsonLogFinal(jsonLogFinal, serialNumber, partNumber, userSSO, FWfctV, FWcalibV, SWv, currGlobalVoltage, currTsuiVoltage, currEnableF, currEnableT){  
+        var msg = JSON.parse(jsonLogFinal);
         var lineButton = "";
         var lineLed = "";
+        var lineDisplay = "";
         var lineJoystick = "";
         var lineBuzzer = "";
+        var lsl = 23.8;
+        var usl = 24.2;
+        var testAlimGlobal;
+        var testAlimTSUI;
+        alert("...."+currGlobalVoltage, currTsuiVoltage)
+        if(currGlobalVoltage != "undefined"){currGlobalVoltage = currGlobalVoltage.toFixed(2);}
+        if(currTsuiVoltage != "undefined"){currTsuiVoltage = currTsuiVoltage.toFixed(2);}
+        
+        if(lsl < currGlobalVoltage && usl > currGlobalVoltage){
+            testAlimGlobal = "Pass"
+        }else{
+            testAlimGlobal = "Fail"
+        }
+        if(lsl < currTsuiVoltage && usl > currTsuiVoltage){
+            testAlimTSUI = "Pass"
+        }else{
+            testAlimTSUI = "Fail"
+        }
         for(var i =0; i<msg.length; i++){
             if(msg[i].type == "button"){
-                if(msg[i].result == "TEST OK"){
-                    var line = "<div><span style='width:100px;display:inline-block;'>"+msg[i].name+"</span> ("+msg[i].description+") = <span style='color:green'>"+msg[i].result+"</span></div>"                
-                }
-                if(msg[i].result == "TEST FAIL"){
-                    var line = "<div><span style='width:100px;display:inline-block;'>"+msg[i].name+"</span> ("+msg[i].description+") = <span style='color:red'>"+msg[i].result+"</span></div>"                
-                }
-                
+                if(msg[i].enable_tens !==""){var enabletens = msg[i].enable_tens.toFixed(2)+"V"}else{var enabletens = ""}
+                if(msg[i].enable_freq !==""){var enablefreq = msg[i].enable_freq+"Hz / "}else{var enablefreq = ""}
+                var line = "<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>PRESS</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].result+"</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>"+enablefreq+enabletens+"</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_enable+"</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
+                line += "<div style='margin-bottom:2px;border-bottom:1px solid grey;padding-bottom:2px;'><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>RELEASE</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].result+"</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'></span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_enable+"</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
                 lineButton += line;
             }
             if(msg[i].type == "led"){
-                 if(msg[i].result == "TEST OK"){
-                    var line = "<div><span style='width:100px;display:inline-block;'>"+msg[i].name+"</span> ("+msg[i].description+") = <span style='color:green'>"+msg[i].result+"</span></div>"                
-                }
-                if(msg[i].result == "TEST FAIL"){
-                    var line = "<div><span style='width:100px;display:inline-block;'>"+msg[i].name+"</span> ("+msg[i].description+") = <span style='color:red'>"+msg[i].result+"</span></div>"                
-                }
-                
+                var line = "<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].result+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"
                 lineLed += line;
             }
+            if(msg[i].type == "display"){
+                var line = "<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].result+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"
+                lineDisplay += line;
+            }
             if(msg[i].type == "buzzer"){
-                if(msg[i].result == "TEST OK"){
-                    var line = "<div><span style='width:100px;display:inline-block;'>"+msg[i].name+"</span> ("+msg[i].description+") = <span style='color:green'>"+msg[i].result+"</span></div>"                
-                }
-                if(msg[i].result == "TEST FAIL"){
-                    var line = "<div><span style='width:100px;display:inline-block;'>"+msg[i].name+"</span> ("+msg[i].description+") = <span style='color:red'>"+msg[i].result+"</span></div>"                
-                }
-                
+                var line = "<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].result+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"
                 lineBuzzer += line;
             }
             if(msg[i].type == "joystick"){
                 if(msg[i].result == "TEST OK"){
-                    var line = "<div><span style='width:100px;display:inline-block;'>"+msg[i].name+"</span> ("+msg[i].description+") = <span style='color:green'>"+msg[i].result+"</span></div>"                
+                    var line = "<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>LEFT</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
+                    line += "<div style='margin-bottom:2px;'><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>RIGHT</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
+                    line += "<div style='margin-bottom:2px;'><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>TOP</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
+                    line += "<div style='margin-bottom:2px;border-bottom:1px solid grey;padding-bottom:2px;'><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>BOTTOM</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
                 }
                 if(msg[i].result == "TEST FAIL"){
-                    var line = "<div><span style='width:100px;display:inline-block;'>"+msg[i].name+"</span> ("+msg[i].description+") = <span style='color:red'>"+msg[i].result+"</span></div>"                
+                    var line = "<div style='margin-bottom:2px;border-bottom:1px solid grey;padding-bottom:2px;'><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>--</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>FAIL</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>FAIL</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
                 }
                 
                 lineJoystick += line;
@@ -2259,7 +2269,31 @@ $(document).ready(function(){
         var currentdate = new Date(); 
         var datetime =  currentdate.getDate() + "/"+ (currentdate.getMonth()+1)  + "/" + currentdate.getFullYear() + " "+ currentdate.getHours() + "h" + currentdate.getMinutes();
         var myWindow=window.open('','','width=1000,height=800');
-        myWindow.document.write("<h2>FINAL TEST LOG RECORD - "+datetime+"</h2><div style='border:1px solid black;padding:5px;'><b>Family</b> : "+familyName+" - <b>PN</b> : "+partNumber+" - <b>SN</b> : "+serialNumber+" - <b>Firmware version</b> : 2.0.3 - <b>User SSO</b> : "+userSSO+"</div><h3>BUTTONS</h3><div>"+lineButton+"</div><h3>BUZZERS</h3><div>"+lineBuzzer+"</div><h3>BACKLIGHTS</h3><div>"+lineLed+"</div>");
+        myWindow.document.write(
+                "<h2>FINAL TEST LOG RECORD - "+datetime+"</h2>"
+                +"<div style='border:1px solid black;padding:5px;'>"
+                    +"<b>PN</b> : "+partNumber+" - <b>SN</b> : "+serialNumber+" - <b>SSO</b> : "+userSSO+" - <b>FW Fonct. V.</b> : "+FWfctV+" - <b>FW Calib. V.</b> : "+FWcalibV+" - <b>Software Version</b> : "+SWv+"</div>"
+                +"<h3>POWER TEST</h3><div>"
+                +"<div><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'><b>Type</b></span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'><b>Measured Value</b></span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'><b>LSL</b></span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'><b>USL</b></span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'><b>Pass/Fail</b></span></div>"
+                +"<div><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>V alimentation</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>"+currGlobalVoltage+"V</span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+lsl+"V</span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+usl+"V</span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+testAlimGlobal+"</span></div>"
+                +"<div><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>V TSUI</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>"+currTsuiVoltage+"V</span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+lsl+"V</span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+usl+"V</span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+testAlimTSUI+"</span></div>"
+                +"</div>"
+                +"<h3>BUTTONS</h3>"
+                    +"<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'><b>Name</b></span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'><b>Ref. TST</b></span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'><b>Action</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>Test Result</b></span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'><b>Measure</b></span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'><b>Enable</b></span><span style='display:inline-block;vertical-align:top;width:50px;margin-left:5px;'><b>CDRH</b></span></div>"
+                    +lineButton
+                +"<h3>BACKLIGHTS</h3>"
+                    +"<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'><b>Name</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>Ref. TST</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>Test Result</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>CDRH</b></span></div>"
+                    +"<div>"+lineLed+"</div>"
+                +"<h3>7 SEGMENTS DISPLAYS</h3>"
+                    +"<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'><b>Name</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>Ref. TST</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>Test Result</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>CDRH</b></span></div>"
+                    +"<div>"+lineDisplay+"</div>"
+                +"<h3>JOYSTICKS</h3>"
+                    +"<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'><b>Name</b></span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'><b>Ref. TST</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>Action</b></span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'><b>Linearity Result</b></span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'><b>Range Result</b></span><span style='display:inline-block;vertical-align:top;width:80px;margin-left:5px;'><b>CDRH</b></span></div>"
+                    +"<div>"+lineJoystick+"</div>"
+                +"<h3>BUZZER</h3>"
+                    +"<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'><b>Name</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>Test Result</b></span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'><b>CDRH</b></span></div>"
+                    +"<div>"+lineBuzzer+"</div>"
+                );
         myWindow.document.close();
         myWindow.focus();
         myWindow.print();
