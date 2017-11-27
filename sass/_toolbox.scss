@@ -260,7 +260,7 @@
         
         .diag_component{ 
             &.is_pressed{
-                background: #ddffdd;
+                background: #59ee3a;
             }
             width: 365px;
             .info_component{
@@ -340,7 +340,8 @@
         &.zone_2{
             top: 0;
             right: 0;
-            min-height: 220px;
+            min-height: 265px;
+            min-width: 362px;
         }
         &.zone_3{           
             width: 750px;

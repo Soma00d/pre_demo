@@ -55,6 +55,9 @@
             <div id="content_testfwdownloadfinal" class="page_content">
                 <?php include('template/repair/testfwdownloadfinal.html'); ?>                
             </div>
+            <div id="content_fctfwdownloadfinal" class="page_content">
+                <?php include('template/repair/fctfwdownloadfinal.html'); ?>                
+            </div>
             <div id="content_history" class="page_content">
                 <?php include('template/repair/history.html'); ?>                
             </div>

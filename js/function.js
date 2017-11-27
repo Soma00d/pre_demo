@@ -546,9 +546,9 @@ $(document).ready(function(){
     $("#send_info_hp_E").on('click', function(){
         //alert(addHexVal("00000580", nodeID));
         userSSO = ($("#user_sso_input_E").val());
-        familyChoice = ($("#family_choice").html());
-        modelChoice = ($("#model_choice").html());        
-        typeChoice = ($("#type_choice").html()); 
+        familyChoice = ($("#family_choice").html().trim());
+        modelChoice = ($("#model_choice").html().trim());        
+        typeChoice = ($("#type_choice").html().trim()); 
         
         //definition des id
         cobID1 = addHexVal("00000580", nodeID);
@@ -1874,7 +1874,7 @@ $(document).ready(function(){
 
                 for(var i=0; i < data.length; i++){
                     
-                    if(data[i].type =="button"){
+                    if(data[i].type =="button" && data[i].is_enable == 1){
                         finalButtonList.push({symbol_name:data[i].symbol_name, type:data[i].type, description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
                         if(data[i].is_led =="1"){
                             finalLedList.push({symbol_name:data[i].symbol_name, type:"led", description:data[i].description, photo_link:data[i].photo_link, timer:data[i].timer, off_signal:data[i].off_signal, on_signal:data[i].on_signal, can_id:data[i].can_id, pressed_val:data[i].pressed_val, released_val:data[i].released_val, standard_name:data[i].standard_name, is_cdrh:data[i].is_cdrh, is_enable:data[i].is_enable});
@@ -1919,7 +1919,7 @@ $(document).ready(function(){
         setTimeout(function(){
             console.log("")
             sendSignalPic("2");
-        },500);
+        },150);
         setTimeout(function(){
             maxIndexFinal = finalTestEntriesTest.length;
 
@@ -1961,11 +1961,15 @@ $(document).ready(function(){
         isCdrh = finalTestEntriesTest[indexFinal]["is_cdrh"];
         isEnable = finalTestEntriesTest[indexFinal]["is_enable"];        
         
-        if(isEnable == 1){
-            console.log("is enable");
-            waitingEnable = 1;
-            sendSignalPic("1");
-        }
+        alert("is enable "+isEnable);
+        setTimeout(function(){
+            if(isEnable == 1){
+                console.log("is enable");
+                waitingEnable = 1;
+                sendSignalPic("1");
+            }
+        },200)
+        
         
         launchTimer(currTimer);
         
@@ -2248,7 +2252,7 @@ $(document).ready(function(){
                 lineDisplay += line;
             }
             if(msg[i].type == "buzzer"){
-                var line = "<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].result+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"
+                var line = "<div><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].result+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"
                 lineBuzzer += line;
             }
             if(msg[i].type == "joystick"){
@@ -2259,7 +2263,7 @@ $(document).ready(function(){
                     line += "<div style='margin-bottom:2px;border-bottom:1px solid grey;padding-bottom:2px;'><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>BOTTOM</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>TEST OK</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
                 }
                 if(msg[i].result == "TEST FAIL"){
-                    var line = "<div style='margin-bottom:2px;border-bottom:1px solid grey;padding-bottom:2px;'><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>--</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>FAIL</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>FAIL</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
+                    var line = "<div style='margin-bottom:2px;border-bottom:1px solid grey;padding-bottom:2px;'><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].name+"</span><span style='display:inline-block;vertical-align:top;width:75px;margin-left:5px;'>"+msg[i].standard_name+"</span><span style='display:inline-block;vertical-align:top;width:100px;margin-left:5px;'>--</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>FAIL</span><span style='display:inline-block;vertical-align:top;width:120px;margin-left:5px;'>FAIL</span><span style='text-align:center;display:inline-block;vertical-align:top;width:50px;margin-left:5px;'>"+msg[i].is_cdrh+"</span></div>"                
                 }
                 
                 lineJoystick += line;
@@ -2793,6 +2797,7 @@ $(document).ready(function(){
     document.getElementById('fileinput2').addEventListener('change', readSingleFile, false);
     document.getElementById('fileinput3').addEventListener('change', readSingleFile, false);
     document.getElementById('fileinput4').addEventListener('change', readSingleFile, false);
+    document.getElementById('fileinput5').addEventListener('change', readSingleFile, false);
     
     $(".testing_upl .start_download").on('click', function(){
         startDownload(cobID2);
@@ -3415,14 +3420,49 @@ $(document).ready(function(){
         sendSignal(stopNodeMsg);
     });
     $(".display_all_bt").on('click', function(){
-        sendSignal("002400806d68d7551407f09b861e3aad000549a84408000000000328AAAAAAAAAAAAAA88");
-        sendSignal("002400806d68d7551407f09b861e3aad000549a84408000000000428AAAAAAA8AAAAAAAA");
-        sendSignal("002400806d68d7551407f09b861e3aad000549a84404000000000228AAAA000000000000");
+       
+        if(familyChoice === "ELEGANCE" && modelChoice === "TSSC") {  
+            // pour TSSC ELEGANCE
+            sendSignal("002400806d68d7551407f09b861e3aad000549a84408000000000328AAAAAAAAAAAAAA88");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a84408000000000428AAAAAAA8AAAAAAAA");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a84404000000000228AAAA000000000000");
+        }  
+        else if (familyChoice === "ELEGANCE" && modelChoice === "SMARTBOX" && typeChoice === "AGILA") {
+            // pour SB TYPE AGILA
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200302000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200202000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200102000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200502000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000004202A00000000000000"); //AGILA CONF ONLY
+        }
+        else if (familyChoice === "ELEGANCE" && modelChoice === "SMARTBOX" && typeChoice === "OTHER") {
+            // pour SB TYPE OTHER
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200302000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200202000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200102000000000000");
+        }
     });
     $(".stop_all_bt").on('click', function(){
-        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002280000000000000000");
-        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000003280000000000000000");
-        sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000004280000000000000000");
+        if(familyChoice === "ELEGANCE" && modelChoice === "TSSC") {        
+            // pour TSSC ELEGANCE
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002280000000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000003280000000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000004280000000000000000");
+        }  
+        else if (familyChoice === "ELEGANCE" && modelChoice === "SMARTBOX" && typeChoice === "AGILA") {
+            // pour SB TYPE AGIlA
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200300000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200200000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200100000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200500000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000004200000000000000000"); //AGILA CONF ONLY
+        }
+        else if (familyChoice === "ELEGANCE" && modelChoice === "SMARTBOX" && typeChoice === "OTHER") {
+            // pour SB TYPE OTHER
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200300000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200200000000000000");
+            sendSignal("002400806d68d7551407f09b861e3aad000549a844080000000002200100000000000000");
+        }
     });
     $(".start_agila_bt").on('click', function(){
         sendSignal("002400806d68d7551407f09b861e3aad000549a844080000"+cobID2+"2F01300101000000");
