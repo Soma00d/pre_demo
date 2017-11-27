@@ -33,7 +33,7 @@
                 <span class="input_zone blue">
                     <select id="type_input_E">
                         <option selected="selected"></option>
-                        <option>AGILA</option>
+                        <option class="agila_option" >AGILA</option>
                         <option>OTHER</option>
                     </select>
                 </span>
@@ -86,10 +86,12 @@ $( "#family_input_E" )
     if(str.trim()== "ELEGANCE" ){
         $(".model_select").removeClass("hidden");
         $(".type_select").addClass("hidden");
+        $(".smarthandle_option").attr('disabled', 'test');
     }
     if(str.trim() == "OMEGA" ){
         $(".model_select").removeClass("hidden");
         $(".type_select").addClass("hidden");
+        $(".smarthandle_option").removeAttr('disabled');         
     }
   })
   .trigger( "change" );
@@ -106,6 +108,11 @@ $( "#model_input_E" )
     }
     if(str.trim() == "SMARTBOX" ){
         $(".type_select").removeClass("hidden");
+        if($("#family_choice").html().trim() == "OMEGA"){
+            $(".agila_option").attr('disabled', 'test');
+        }else{
+            $(".agila_option").removeAttr('disabled');
+        }
     }
   })
   .trigger( "change" );
